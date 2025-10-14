@@ -1,4 +1,3 @@
-// index.js
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -8,16 +7,12 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecret';
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Users service URL
 const USERS_SERVICE_URL = 'http://service_users:8000';
 
-// ==============================
-// 🔑 JWT AUTH MIDDLEWARE
-// ==============================
+// JWT Middleware
 function authenticateToken(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader) return res.status(401).json({ error: 'No token provided' });
@@ -32,18 +27,13 @@ function authenticateToken(req, res, next) {
     }
 }
 
-// ==============================
-// 🧍 USERS ROUTES
-// ==============================
-
-// Регистрация
+// Registration
 app.post('/users/register', async (req, res) => {
     try {
         const user = await axios.post(`${USERS_SERVICE_URL}/users/register`, req.body);
         res.status(201).json(user.data);
     } catch (error) {
         if (error.response) {
-            // Возвращаем контролируемую ошибку от сервиса users
             res.status(error.response.status).json(error.response.data);
         } else {
             res.status(500).json({ error: 'Internal server error' });
@@ -51,11 +41,10 @@ app.post('/users/register', async (req, res) => {
     }
 });
 
-// Логин (вернёт JWT)
+// Login
 app.post('/users/login', async (req, res) => {
     try {
         const user = await axios.post(`${USERS_SERVICE_URL}/users/login`, req.body);
-
         if (user.data && user.data.id) {
             const token = jwt.sign(
                 { id: user.data.id, email: user.data.email },
@@ -75,19 +64,16 @@ app.post('/users/login', async (req, res) => {
     }
 });
 
-// Пример защищённого маршрута (проверка токена)
+// Protected route example
 app.get('/users/me', authenticateToken, async (req, res) => {
     res.json({ message: 'Access granted', user: req.user });
 });
 
-// ==============================
-// 🩺 Health check
-// ==============================
+// Health check
 app.get('/health', (req, res) => {
     res.json({ status: 'API Gateway is running' });
 });
 
-// ==============================
 app.listen(PORT, () => {
     console.log(`✅ API Gateway running on port ${PORT}`);
 });
