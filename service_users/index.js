@@ -60,7 +60,7 @@ app.get('/users/:userId', (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json({ id: user.id, email: user.email, name: user.name });
 });
-
+//
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Users service running on port ${PORT}`);
 });
